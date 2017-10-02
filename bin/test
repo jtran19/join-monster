@@ -12,6 +12,7 @@ ORACLE=1
 PG=1
 MYSQL=1
 SQLITE=1
+DB2=1
 
 while [[ $# -gt 0 ]]
 do
@@ -27,6 +28,9 @@ do
     ;;
     -s|--no-sqlite)
       SQLITE=0
+    ;;
+    -d|--no-db2)
+      DB2=0
     ;;
     *)
       echo unrecognized option $1
@@ -57,6 +61,10 @@ if [ $PG = 1 ]; then
   npm run testpg-paging
   MINIFY=1 npm run testpg
   MINIFY=1 npm run testpg-paging
+fi
+if [ $DB2 = 1 ]; then 
+  echo -e "${YELLOW} testing db2${NC}"
+  npm run testdb2
 fi
 
 echo -e "${BLUE} running with all batches ${NC}"
