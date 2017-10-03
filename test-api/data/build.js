@@ -23,6 +23,7 @@ const assert = require('assert')
 
   console.log('building db2')
   await require('./setup/db2')('db2')
+  await require('./setup/data1')('db2')
   //TODO - Make use of GraphQL mutation for inserting test data -- later: expand this to all databases
 
 })()

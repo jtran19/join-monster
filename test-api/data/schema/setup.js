@@ -4,7 +4,6 @@ const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 const Promise = require('bluebird')
-const ibmdb = require('ibm_db')
 
 module.exports = function(db, name) {
 

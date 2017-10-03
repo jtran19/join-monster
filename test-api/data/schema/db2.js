@@ -1,40 +1,34 @@
 module.exports.dropAccountsTable = `DROP TABLE accounts`;
 module.exports.createAccountsTable = `CREATE TABLE accounts (
-  id INTEGER,
+  id INTEGER NOT NULL,
   email_address VARCHAR(150),
   first_name VARCHAR(255),
   last_name VARCHAR(255),
   num_legs INTEGER DEFAULT 2,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  PRIMARY KEY(id)
 )`;
-
-// ALTER TABLE "accounts" ADD (
-//   CONSTRAINT accounts_pk PRIMARY KEY ("id"))
 
 module.exports.dropCommentsTable = `DROP TABLE comments`;
 module.exports.createCommentsTable = `CREATE TABLE comments (
-  id INTEGER ,
+  id INTEGER NOT NULL,
   body VARCHAR(4000) NOT NULL,
   post_id INTEGER NOT NULL,
   author_id INTEGER NOT NULL,
-  archived INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  archived SMALLINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  PRIMARY KEY(id)
 )`;
-
-// ALTER TABLE "comments" ADD (
-//   CONSTRAINT comments_pk PRIMARY KEY ("id"))
 
 module.exports.dropPostsTable = `DROP TABLE posts`;
 module.exports.createPostsTable = `CREATE TABLE posts (
-  id INTEGER ,
+  id INTEGER NOT NULL,
   body VARCHAR(4000) NOT NULL,
   author_id INTEGER NOT NULL,
-  archived INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  archived SMALLINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  PRIMARY KEY(id)
 )`;
-
-// ALTER TABLE "posts" ADD (
-  // CONSTRAINT posts_pk PRIMARY KEY ("id"))
 
 
 module.exports.dropRelationshipsTable = `DROP TABLE relationships`;
