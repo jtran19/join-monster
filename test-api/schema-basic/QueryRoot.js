@@ -17,6 +17,7 @@ import mysqlModule from '../../src/stringifiers/dialects/mysql'
 import oracleModule from '../../src/stringifiers/dialects/oracle'
 import pgModule from '../../src/stringifiers/dialects/pg'
 import sqlite3Module from '../../src/stringifiers/dialects/sqlite3'
+import db2Module from '../../src/stringifiers/dialects/db2'
 
 import joinMonster from '../../src/index'
 
@@ -24,14 +25,19 @@ const { MINIFY, DB } = process.env
 const options = {
   minify: MINIFY == 1
 }
-if (knex.client.config.client === 'mysql') {
-  options.dialectModule = mysqlModule
-} else if (knex.client.config.client === 'pg') {
-  options.dialectModule = pgModule
-} else if (knex.client.config.client === 'oracledb') {
-  options.dialectModule = oracleModule
-} else if (knex.client.config.client === 'sqlite3') {
-  options.dialectModule = sqlite3Module
+
+if (DB !== 'DB2') {
+  if (knex.client.config.client === 'mysql') {
+    options.dialectModule = mysqlModule
+  } else if (knex.client.config.client === 'pg') {
+    options.dialectModule = pgModule
+  } else if (knex.client.config.client === 'oracledb') {
+    options.dialectModule = oracleModule
+  } else if (knex.client.config.client === 'sqlite3') {
+    options.dialectModule = sqlite3Module
+  }
+} else {
+  options.dialectModule = db2Module
 }
 
 export default new GraphQLObjectType({

@@ -22,8 +22,14 @@ if (dbType === 'PG') {
   client = 'oracledb'
 }
 
-console.log('connection to', { client, connection })
-export default require('knex')({ client, connection, useNullAsDefault: true })
+let database = undefined
+if (dbType !== 'DB2') {
+  console.log('connection to', { client, connection })
+  database = require('knex')({ client, connection, useNullAsDefault: true })
+}
+
+export default database
+// export default require('knex')({ client, connection, useNullAsDefault: true })
 
 function pgUrl(dbName) {
   assert(process.env.PG_URL, 'Environment variable PG_URL must be defined, e.g. "postgres://user:pass@localhost/"')
