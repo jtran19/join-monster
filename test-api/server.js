@@ -7,7 +7,7 @@ import graphiql from 'koa-custom-graphiql'
 import koaStatic from 'koa-static'
 import cors from 'kcors'
 
-// import schemaBasic from './schema-basic/index'
+import schemaBasic from './schema-basic/index'
 // import schemaRelay from './schema-paginated/index'
 import schemaInsert from './data/schema-insert/index'
 
@@ -27,13 +27,13 @@ router.get('/graphql-relay', graphiql({
   js: '/graphiql.js'
 }))
 
-// router.post('/graphql', graphqlHTTP({
-//   schema: schemaBasic,
-//   formatError: e => {
-//     console.error(e)
-//     return e
-//   }
-// }))
+router.post('/graphql', graphqlHTTP({
+  schema: schemaBasic,
+  formatError: e => {
+    console.error(e)
+    return e
+  }
+}))
 
 // router.post('/graphql-relay', graphqlHTTP({
 //   schema: schemaRelay,

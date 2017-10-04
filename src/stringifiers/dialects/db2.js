@@ -1,5 +1,5 @@
 function quote(str) {
-  return `'${str}'`
+  return `"${str}"`
 }
 
 
@@ -9,6 +9,8 @@ module.exports = {
   name: 'db2',
 
   quote,
+
+  caseSensitiveNames: true,
 
   compositeKey(parent, keys) {
     keys = keys.map(key => `${quote(parent)}.${quote(key)}`)

@@ -7,6 +7,7 @@ import {
 } from 'graphql'
 
 import knex from './database'
+import { databaseCall } from './database'
 import dbCall from '../data/fetch'
 
 import User from './User'
@@ -60,7 +61,8 @@ export default new GraphQLObjectType({
       where: (table, args) => args.ids ? `${table}.id IN (${args.ids.join(',')})` : null,
       orderBy: 'id',
       resolve: async (parent, args, context, resolveInfo) => {
-        return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        // return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        return joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
       }
     },
     user: {

@@ -44,8 +44,8 @@ function merge(dest, src) {
 export function queryASTToSqlAST(resolveInfo, options, context) {
   // this is responsible for all the logic regarding creating SQL aliases
   // we need varying degrees of uniqueness and readability
-  // force oracle to minify, because it has this 30-character limit on column identifiers
-  const namespace = new AliasNamespace(options.dialect === 'oracle' ? true : options.minify)
+  // force oracle (and db2 in the case of z/OS) to minify, because it has this 30-character limit on column identifiers
+  const namespace = new AliasNamespace(options.dialect === 'oracle' || options.dialect === 'db2' ? true : options.minify)
 
   // we'll build up the AST representing the SQL recursively
   const sqlAST = {}
