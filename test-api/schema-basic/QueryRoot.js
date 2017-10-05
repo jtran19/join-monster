@@ -51,7 +51,13 @@ export default new GraphQLObjectType({
     },
     database: {
       type: GraphQLString,
-      resolve: () => knex.client.config.client + ' ' + JSON.stringify(knex.client.config.connection).replace(/"/g, '  ')
+      resolve: () => {
+        if (DB === 'DB2') {
+          return 'db2 ' + process.env.DB2_URL
+        } else {
+          return knex.client.config.client + ' ' + JSON.stringify(knex.client.config.connection).replace(/"/g, '  ')
+        }
+      }
     },
     users: {
       type: new GraphQLList(User),
@@ -87,7 +93,8 @@ export default new GraphQLObjectType({
         if (args.idAsync) return Promise.resolve(`${usersTable}.${q('id', DB)} = ${args.idAsync}`)
       },
       resolve: (parent, args, context, resolveInfo) => {
-        return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        // return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        return joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
       }
     },
     sponsors: {

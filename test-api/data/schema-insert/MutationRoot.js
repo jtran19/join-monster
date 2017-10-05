@@ -36,7 +36,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into accounts (id, email_address, first_name, last_name) values (?, ?, ?, ?)`;
+          const sql = `insert into "accounts" ("id", "email_address", "first_name", "last_name") values (?, ?, ?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -58,7 +58,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into posts (id, body, author_id, archived) values (?, ?, ?, ?)`;
+          const sql = `insert into "posts" ("id", "body", "author_id", "archived") values (?, ?, ?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -81,7 +81,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into comments (id, body, post_id, author_id, archived) values (?, ?, ?, ?, ?)`;
+          const sql = `insert into "comments" ("id", "body", "post_id", "author_id", "archived") values (?, ?, ?, ?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -102,7 +102,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into relationships (follower_id, followee_id, closeness) values (?, ?, ?)`;
+          const sql = `insert into "relationships" ("follower_id", "followee_id", "closeness") values (?, ?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -122,7 +122,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into likes (account_id, comment_id) values (?, ?)`;
+          const sql = `insert into "likes" ("account_id", "comment_id") values (?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -143,7 +143,7 @@ export default new GraphQLObjectType({
       },
       resolve: (parent, args, context, resolveInfo) => {
         if (process.env.DB === 'DB2') {
-          const sql = `insert into sponsors (generation, first_name, last_name) values (?, ?, ?)`;
+          const sql = `insert into "sponsors" ("generation", "first_name", "last_name") values (?, ?, ?)`;
           console.log(`Args: ${JSON.stringify(args, ' ', 2)}`)
           const bindParameters = Object.values(args)
           console.log(`Bind Parameters: ${bindParameters}`)
@@ -180,14 +180,6 @@ function runDB2Sql(sql, bindParameters) {
             })
           }
         })
-        // conn.query(sql, bindParameters, (err, results) => {
-        //   if (err) {
-        //     reject(`DB2 SQL error: ${err}`)
-        //   } else {
-        //     console.log(JSON.stringify(results, ' ', 2))
-        //     resolve('OK')
-        //   }
-        // })
       }
     })
   })

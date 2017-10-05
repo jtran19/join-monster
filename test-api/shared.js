@@ -4,6 +4,7 @@ export function q(str, dbType) {
     return `\`${str}\``
   case 'PG':
   case 'ORACLE':
+  case 'DB2':
     return `"${str}"`
   default: 
     return `"${str}"`
@@ -14,6 +15,7 @@ export function bool(isTrue, dbType) {
   switch(dbType) {
   case 'PG':
   case 'MYSQL':
+  case 'DB2':
     return isTrue ? 'TRUE' : 'FALSE'
   case 'sqlite3':
   case 'oracle':

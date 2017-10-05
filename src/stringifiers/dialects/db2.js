@@ -10,8 +10,6 @@ module.exports = {
 
   quote,
 
-  caseSensitiveNames: true,
-
   compositeKey(parent, keys) {
     keys = keys.map(key => `${quote(parent)}.${quote(key)}`)
     return `CONCAT(${keys.join(', ')})`

@@ -50,7 +50,7 @@ export default async function stringifySqlAST(topNode, context, options) {
 }
 
 async function _stringifySqlAST(parent, node, prefix, context, selections, tables, wheres, orders, batchScope, dialect) {
-  const { quote: q, caseSensitiveNames } = dialect
+  const { quote: q } = dialect
   const parentTable = node.fromOtherTable || (parent && parent.as)
   switch (node.type) {
   case 'table':
@@ -97,14 +97,14 @@ async function _stringifySqlAST(parent, node, prefix, context, selections, table
     break
   case 'column':
     selections.push(
-      `${q(parentTable)}.${caseSensitiveNames ? node.name : q(node.name)} AS ${q(joinPrefix(prefix) + node.as)}`
+      `${q(parentTable)}.${q(node.name)} AS ${q(joinPrefix(prefix) + node.as)}`
     )
     break
   case 'columnDeps':
     // grab the dependant columns
     for (let name in node.names) {
       selections.push(
-        `${q(parentTable)}.${caseSensitiveNames ? name : q(name)} AS ${q(joinPrefix(prefix) + node.names[name])}`
+        `${q(parentTable)}.${q(name)} AS ${q(joinPrefix(prefix) + node.names[name])}`
       )
     }
     break
@@ -129,12 +129,7 @@ async function _stringifySqlAST(parent, node, prefix, context, selections, table
 }
 
 async function handleTable(parent, node, prefix, context, selections, tables, wheres, orders, batchScope, dialect) {
-  const { quote: q, caseSensitiveNames } = dialect
-
-  // DB2 table names are case insensitive unless quoted, in which case everything gets messed up
-  if (caseSensitiveNames) {
-    node.name = node.name.replace(/"/g, '')
-  }
+  const { quote: q } = dialect
 
   // generate the "where" condition, if applicable
   if (whereConditionIsntSupposedToGoInsideSubqueryOrOnNextBatch(node, parent)) {
@@ -272,12 +267,12 @@ async function handleTable(parent, node, prefix, context, selections, tables, wh
 // we need one ORDER BY clause on at the very end to make sure everything comes back in the correct order
 // ordering inner(sub) queries DOES NOT guarantee the order of those results in the outer query
 function stringifyOuterOrder(orders, dialect) {
-  const { quote: q, caseSensitiveNames } = dialect
+  const { quote: q } = dialect
   const conditions = []
   for (let condition of orders) {
     for (let column in condition.columns) {
       const direction = condition.columns[column]
-      conditions.push(`${q(condition.table)}.${caseSensitiveNames ? column : q(column)} ${direction}`)
+      conditions.push(`${q(condition.table)}.${q(column)} ${direction}`)
     }
   }
   return conditions.join(', ')
