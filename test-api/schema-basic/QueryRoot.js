@@ -109,18 +109,22 @@ export default new GraphQLObjectType({
         if (args.filterLegless) return `${sponsorsTable}.${q('num_legs', DB)} IS NULL`
       },
       resolve: (parent, args, context, resolveInfo) => {
-        // use the callback version this time
-        return joinMonster(resolveInfo, context, (sql, done) => {
-          knex.raw(sql)
-          .then(result => {
-            if (options.dialectModule.name === 'mysql') {
-              done(null, result[0])
-            } else {
-              done(null, result)
-            }
-          })
-          .catch(done)
-        }, options)
+        if (DB !== 'DB2') {
+          // use the callback version this time
+          return joinMonster(resolveInfo, context, (sql, done) => {
+            knex.raw(sql)
+            .then(result => {
+              if (options.dialectModule.name === 'mysql') {
+                done(null, result[0])
+              } else {
+                done(null, result)
+              }
+            })
+            .catch(done)
+          }, options)
+        } else {
+          return joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
+        }
       }
     }
   })
