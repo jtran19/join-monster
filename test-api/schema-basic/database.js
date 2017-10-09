@@ -93,7 +93,7 @@ export function databaseCall(sql, context) {
             console.log(err)
             reject(err)
           }
-          console.log(JSON.stringify(results, ' ', 2))
+          // console.log(JSON.stringify(results, ' ', 2))
           resolve(results)
         })
 

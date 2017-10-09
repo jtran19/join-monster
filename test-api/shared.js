@@ -15,10 +15,10 @@ export function bool(isTrue, dbType) {
   switch(dbType) {
   case 'PG':
   case 'MYSQL':
-  case 'DB2':
-    return isTrue ? 'TRUE' : 'FALSE'
+  return isTrue ? 'TRUE' : 'FALSE'
   case 'sqlite3':
   case 'oracle':
+  case 'DB2':
     return isTrue ? 1 : 0
   default: 
     return isTrue ? 1 : 0
