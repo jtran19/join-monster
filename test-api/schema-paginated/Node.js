@@ -7,23 +7,29 @@ import joinMonster from '../../src/index'
 const options = {
   minify: process.env.MINIFY == 1
 }
-const { PAGINATE } = process.env
-if (knex.client.config.client === 'mysql') {
-  options.dialect = PAGINATE ? 'mariadb' : 'mysql'
-} else if (knex.client.config.client === 'pg') {
-  options.dialect = 'pg'
-} else if (knex.client.config.client === 'oracledb') {
-  options.dialect = 'oracle'
+const { PAGINATE, DB } = process.env
+if (DB !== 'DB2') {
+  if (knex.client.config.client === 'mysql') {
+    options.dialect = PAGINATE ? 'mariadb' : 'mysql'
+  } else if (knex.client.config.client === 'pg') {
+    options.dialect = 'pg'
+  } else if (knex.client.config.client === 'oracledb') {
+    options.dialect = 'oracle'
+  }
+} else {
+  options.dialect = 'db2'
 }
 
 import dbCall from '../data/fetch'
 import knex from './database'
+import { databaseCall } from './database'
 
 const { nodeInterface, nodeField } = nodeDefinitions(
   (globalId, context, resolveInfo) => {
     const { type, id } = fromGlobalId(globalId)
     return joinMonster.getNode(type, resolveInfo, context, parseInt(id),
-      sql => dbCall(sql, knex, context),
+      // sql => dbCall(sql, knex, context),
+      sql => databaseCall(sql, context),
       options
     )
   },

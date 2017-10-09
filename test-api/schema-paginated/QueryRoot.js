@@ -12,6 +12,7 @@ import {
 } from 'graphql-relay'
 
 import knex from './database'
+import { databaseCall } from './database'
 import { User, UserConnection } from './User'
 import Sponsor from './Sponsor'
 import { nodeField } from './Node'
@@ -25,12 +26,17 @@ const { PAGINATE, DB } = process.env
 const options = {
   minify: process.env.MINIFY == 1
 }
-if (knex.client.config.client === 'mysql') {
-  options.dialect = PAGINATE ? 'mariadb' : 'mysql'
-} else if (knex.client.config.client === 'pg') {
-  options.dialect = 'pg'
-} else if (knex.client.config.client === 'oracledb') {
-  options.dialect = 'oracle'
+
+if (DB !== 'DB2') {
+  if (knex.client.config.client === 'mysql') {
+    options.dialect = PAGINATE ? 'mariadb' : 'mysql'
+  } else if (knex.client.config.client === 'pg') {
+    options.dialect = 'pg'
+  } else if (knex.client.config.client === 'oracledb') {
+    options.dialect = 'oracle'
+  }
+} else {
+  options.dialect = 'db2'
 }
 
 
@@ -44,7 +50,13 @@ export default new GraphQLObjectType({
     },
     database: {
       type: GraphQLString,
-      resolve: () => knex.client.config.client + ' ' + JSON.stringify(knex.client.config.connection).replace(/"/g, '  ')
+      resolve: () => {
+        if (DB === 'DB2') {
+          return 'db2 ' + process.env.DB2_URL
+        } else {
+          knex.client.config.client + ' ' + JSON.stringify(knex.client.config.connection).replace(/"/g, '  ')
+        }
+      }
     },
     dialect: {
       type: GraphQLString,
@@ -75,7 +87,8 @@ export default new GraphQLObjectType({
         if (args.search) return `(lower(${table}.${q('first_name', DB)}) LIKE lower('%${args.search}%') OR lower(${table}.${q('last_name', DB)}) LIKE lower('%${args.search}%'))`
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const data = await joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        // const data = await joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        const data = await joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
         return PAGINATE ? data : connectionFromArray(data, args)
       }
     },
@@ -84,7 +97,8 @@ export default new GraphQLObjectType({
       limit: 2,
       orderBy: 'id',
       resolve: (parent, args, context, resolveInfo) => {
-        return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        // return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        return joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
       }
     },
     user: {
@@ -99,7 +113,8 @@ export default new GraphQLObjectType({
         if (args.id) return `${usersTable}.${q('id', DB)} = ${args.id}`
       },
       resolve: (parent, args, context, resolveInfo) => {
-        return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        // return joinMonster(resolveInfo, context, sql => dbCall(sql, knex, context), options)
+        return joinMonster(resolveInfo, context, sql => databaseCall(sql, context), options)
       }
     },
     sponsors: {

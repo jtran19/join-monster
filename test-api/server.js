@@ -8,7 +8,7 @@ import koaStatic from 'koa-static'
 import cors from 'kcors'
 
 import schemaBasic from './schema-basic/index'
-// import schemaRelay from './schema-paginated/index'
+import schemaRelay from './schema-paginated/index'
 import schemaInsert from './data/schema-insert/index'
 
 const app = new Koa()
@@ -35,13 +35,13 @@ router.post('/graphql', graphqlHTTP({
   }
 }))
 
-// router.post('/graphql-relay', graphqlHTTP({
-//   schema: schemaRelay,
-//   formatError: e => {
-//     console.error(e)
-//     return e
-//   }
-// }))
+router.post('/graphql-relay', graphqlHTTP({
+  schema: schemaRelay,
+  formatError: e => {
+    console.error(e)
+    return e
+  }
+}))
 
 router.post('/graphql-setup', graphqlHTTP({
   schema: schemaInsert,
