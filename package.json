@@ -1,7 +1,7 @@
 {
-  "name": "join-monster",
+  "name": "join-monster-db2",
   "version": "2.0.14",
-  "description": "A GraphQL to SQL query execution layer for batch data fetching.",
+  "description": "An experimental DB2 dialect for join-monster.",
   "main": "dist/index.js",
   "engines": {
     "node": ">=6.0.0"
