@@ -12,7 +12,7 @@ module.exports.createAccountsTable = `CREATE TABLE "accounts" (
 module.exports.dropCommentsTable = `DROP TABLE "comments"`;
 module.exports.createCommentsTable = `CREATE TABLE "comments" (
   "id" INTEGER NOT NULL,
-  "body" VARCHAR(4000) NOT NULL,
+  "body" VARCHAR(1000) NOT NULL,
   "post_id" INTEGER NOT NULL,
   "author_id" INTEGER NOT NULL,
   "archived" SMALLINT DEFAULT 0,
@@ -23,7 +23,7 @@ module.exports.createCommentsTable = `CREATE TABLE "comments" (
 module.exports.dropPostsTable = `DROP TABLE "posts"`;
 module.exports.createPostsTable = `CREATE TABLE "posts" (
   "id" INTEGER NOT NULL,
-  "body" VARCHAR(4000) NOT NULL,
+  "body" VARCHAR(1000) NOT NULL,
   "author_id" INTEGER NOT NULL,
   "archived" SMALLINT DEFAULT 0,
   "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 

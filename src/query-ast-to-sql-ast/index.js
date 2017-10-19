@@ -208,6 +208,8 @@ function handleTable(sqlASTNode, queryASTNode, field, gqlType, namespace, grabMa
   // tables have child fields, lets push them to an array
   const children = sqlASTNode.children = sqlASTNode.children || []
 
+  //JT -- pass dialectOptions object...
+  sqlASTNode.dialectOptions = field.dialectOptions
   sqlASTNode.fieldName = field.name
   sqlASTNode.grabMany = grabMany
 

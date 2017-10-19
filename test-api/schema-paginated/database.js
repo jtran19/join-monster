@@ -1,6 +1,8 @@
 import assert from 'assert'
 import path from 'path'
 import ibmdb from 'ibm_db'
+import { debug } from 'debug'
+import { emphasize } from '../../src/util'
 
 function getDbType() {
   return process.env.DB
@@ -90,7 +92,10 @@ export function databaseCall(sql, context) {
             reject(err)
           }
           
-          console.log('DB2 SQL:\n', sql)
+          // console.log('DB2 SQL:\n', sql)
+          if (debug('database').enabled) {
+            debug('database')(emphasize('database'), sql)
+          }
           conn.query(sql, [], (err, results) => {
             if (err) {
               console.log(err)

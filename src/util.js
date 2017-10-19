@@ -55,6 +55,7 @@ export function objToCursor(obj) {
 
 export function cursorToObj(cursor) {
   const str = Buffer.from(cursor, 'base64').toString()
+  console.log('str: ' + str)
   return JSON.parse(str)
 }
 

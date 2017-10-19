@@ -91,6 +91,11 @@ const User = new GraphQLObjectType({
     commentsLast2: {
       type: new GraphQLList(Comment),
       orderBy: { id: 'desc' },
+      dialectOptions: {
+        db2: {
+          partitionBy: [ 'author_id' ]
+        }
+      },
       limit: () => 2,
       ...STRATEGY === 'batch' ? {
         sqlBatch: {

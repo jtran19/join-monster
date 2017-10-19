@@ -4,6 +4,9 @@ import {
   orderColumnsToString
 } from '../shared'
 import { filter } from 'lodash'
+import { debug as _debug } from 'debug'
+
+const debug = _debug('db2-dialect')
 
 function recursiveConcat(keys) {
   if (keys.length <= 1) {
@@ -15,19 +18,19 @@ function recursiveConcat(keys) {
 const q = str => `"${str}"`
 
 function keysetPagingSelect(table, whereCondition, order, limit, as, options = {}) {
-  let { joinCondition, joinType, extraJoin } = options
+  let { joinCondition, joinType, extraJoin, parentAs, db2PartitionBy } = options
   whereCondition = filter(whereCondition).join(' AND ') || '1 = 1'
   if (joinCondition) {
     return `\
-${ joinType === 'LEFT' ? 'OUTER' : 'CROSS' } APPLY (
+${joinType} JOIN (
   SELECT "${as}".*
   FROM ${table} "${as}"
   ${extraJoin ? `LEFT JOIN ${extraJoin.name} ${q(extraJoin.as)}
     ON ${extraJoin.condition}` : ''}
-  WHERE ${whereCondition}
+  WHERE 1 = 1
   ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
-  FETCH FIRST ${limit} ROWS ONLY
-) ${q(as)}`
+  ${limit === 'ALL' ? '' : `FETCH FIRST ${limit} ROWS ONLY`}
+) ${q(as)} ON ${whereCondition}`
   }
   return `\
 FROM (
@@ -35,39 +38,69 @@ FROM (
   FROM ${table} "${as}"
   WHERE ${whereCondition}
   ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
-  FETCH FIRST ${limit} ROWS ONLY
+  ${limit === 'ALL' ? '' : `FETCH FIRST ${limit} ROWS ONLY`}
 ) ${q(as)}`
 }
 
+//oracle
+// function offsetPagingSelect(table, pagingWhereConditions, order, limit, offset, as, options = {}) {
+//   let { joinCondition, joinType, extraJoin } = options
+//   const whereCondition = filter(pagingWhereConditions).join(' AND ') || '1 = 1'
+//   if (joinCondition) {
+//     return `\
+// ${joinType === 'LEFT' ? 'OUTER' : 'CROSS'} APPLY (
+//   SELECT "${as}".*, count(*) OVER () AS ${q('$total')}
+//   FROM ${table} "${as}"
+//   ${extraJoin ? `LEFT JOIN ${extraJoin.name} ${q(extraJoin.as)}
+//     ON ${extraJoin.condition}` : ''}
+//   WHERE ${whereCondition}
+//   ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
+//   OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+// ) ${q(as)}`
+//   }
+//   return `\
+// FROM (
+//   SELECT "${as}".*, count(*) OVER () AS ${q('$total')}
+//   FROM ${table} "${as}"
+//   WHERE ${whereCondition}
+//   ORDER BY ${orderColumnsToString(order.columns, q, order.table)}
+//   OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+// ) ${q(as)}`
+// }
+
 function offsetPagingSelect(table, pagingWhereConditions, order, limit, offset, as, options = {}) {
-  let { joinCondition, joinType, extraJoin } = options
+  let { joinCondition, joinType, extraJoin, parentAs, dialectOptions } = options
+  var db2PartitionBy = undefined
+  if (dialectOptions && dialectOptions.db2) {
+    db2PartitionBy = dialectOptions.db2.partitionBy
+  }
+  debug(JSON.stringify(pagingWhereConditions, ' ', 2))
+  debug('ParentAs: ' + parentAs)
   const whereCondition = filter(pagingWhereConditions).join(' AND ') || '1 = 1'
   if (joinCondition) {
-    console.log(joinCondition)
+    debug(joinCondition)
     return `\
 ${joinType} JOIN (
-  SELECT "${as}".*, ${q('$rownum')}, ${q('$total')} 
+  SELECT "${as}".* 
   FROM (
-    SELECT "${as}".*, row_number() over(ORDER BY  ${orderColumnsToString(order.columns, q, order.table)}) AS ${q('$rownum')}, count(*) OVER () AS ${q('$total')}
-    FROM ${table} "${as}"
+    SELECT "${as}".*, row_number() over(${db2PartitionBy ? `PARTITION BY ${q(db2PartitionBy)} ` : ''}ORDER BY  ${orderColumnsToString(order.columns, q, '')}) AS ${q('$rownum')}, count(*) OVER () AS ${q('$total')}
+    FROM ${table} "${as}" 
     ${extraJoin ? `LEFT JOIN ${extraJoin.name} ${q(extraJoin.as)}
       ON ${extraJoin.condition}` : ''}
-    ) ${q(as)} 
-  WHERE 1 = 1 
-  ORDER BY ${orderColumnsToString(order.columns, q, order.table)} 
-  FETCH FIRST ${limit} ROWS ONLY
+  ) "${as}"
+  WHERE ${q('$rownum')} <= ${limit} 
 ) ${q(as)} ON ${whereCondition} `
   }
   return `\
 FROM (
-  SELECT "${as}".*, ${q('$rownum')}, ${q('$total')}
+  SELECT "${as}".*
   FROM (
-    SELECT "${as}".*, row_number() over(ORDER BY  ${orderColumnsToString(order.columns, q, order.table)}) AS ${q('$rownum')}, count(*) OVER () AS ${q('$total')} 
+    SELECT "${as}".*, row_number() over(ORDER BY  ${orderColumnsToString(order.columns, q, as)}) AS ${q('$rownum')}, count(*) OVER () AS ${q('$total')} 
     FROM ${table} "${as}"
   ) "${as}"
   WHERE ${whereCondition} 
   AND ${q('$rownum')} > ${offset} 
-  FETCH FIRST ${limit} ROWS ONLY
+  ${limit === 'ALL' ? '' : `FETCH FIRST ${limit} ROWS ONLY`}
 ) ${q(as)}`
 }
 
@@ -81,6 +114,11 @@ const dialect = module.exports = {
   },
 
   handlePaginationAtRoot: async function(parent, node, context, tables) {
+    console.log('handlePaginationAtRoot')
+    console.log('Parent:\n', JSON.stringify(parent, ' ', 2))
+    console.log('Node:\n', JSON.stringify(node, ' ', 2))
+    console.log('Tables:\n', JSON.stringify(tables, ' ', 2))
+    
     const pagingWhereConditions = []
     if (node.sortKey) {
       const { limit, order, whereCondition: whereAddendum } = interpretForKeysetPaging(node, dialect)
@@ -99,6 +137,11 @@ const dialect = module.exports = {
   },
 
   handleJoinedOneToManyPaginated: async function(parent, node, context, tables, joinCondition) {
+    debug('handleJoinedOneToManyPaginated', 'Parent:\n', JSON.stringify(parent, ' ', 2))
+    console.log('Node:\n', JSON.stringify(node, ' ', 2))
+    console.log('Tables:\n', JSON.stringify(tables, ' ', 2))
+
+    
     const pagingWhereConditions = [
       await node.sqlJoin(`"${parent.as}"`, q(node.as), node.args || {}, context, node)
     ]
@@ -119,7 +162,7 @@ const dialect = module.exports = {
       const { limit, offset, order } = interpretForOffsetPaging(node, dialect)
       tables.push(
         offsetPagingSelect(node.name, pagingWhereConditions, order, limit, offset, node.as, {
-          joinCondition, joinType: 'LEFT'
+          joinCondition, joinType: 'LEFT', parentAs: parent.as, dialectOptions: node.dialectOptions
         })
       )
     }
